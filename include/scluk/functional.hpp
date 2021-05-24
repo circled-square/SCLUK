@@ -1,5 +1,5 @@
-#ifndef SCLUK_FUNCTIONAL_UTILITIES_HPP
-#define SCLUK_FUNCTIONAL_UTILITIES_HPP
+#ifndef SCLUK_FUNCTIONAL_HPP
+#define SCLUK_FUNCTIONAL_HPP
 
 #include <cassert>
 #include <type_traits>
