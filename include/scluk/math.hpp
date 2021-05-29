@@ -72,7 +72,7 @@ namespace scluk::math {
 
     constexpr pi_constant_t pi;
 
-    namespace literals {
+    inline namespace literals {
         constexpr f128 operator""_pi_l(long double n)        { return pi * n; }
         constexpr f128 operator""_pi_l(unsigned long long n) { return pi * f128(n); }
 
@@ -82,6 +82,13 @@ namespace scluk::math {
         constexpr f32 operator""_pi_f(long double n)         { return pi * f32(n); }
         constexpr f32 operator""_pi_f(unsigned long long n)  { return pi * f32(n); }
     }
+    template <std::floating_point float_t>
+    float_t hann_window(float_t p) {
+        return float_t(.5) * (float_t(1.) + std::cos(float_t(2_pi_l) * (p + float_t(.5))));
+    }
+
+    template<std::floating_point float_t>
+    float_t hann_window(size_t i, size_t sz) { return hann_window(float_t(i) / (sz - 1)); }
 }
 namespace scluk { namespace math_literals = math::literals; }
 
