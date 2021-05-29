@@ -62,11 +62,16 @@ namespace scluk::meta {
 
 namespace scluk::concepts {
     template<typename T>
-    concept collection = requires(T a) {
-        { a.size() } -> std::convertible_to<std::size_t>;
+    concept iterable = requires(T a) {
         { std::begin(a), std::end(a) };
     };
 
+    template <typename T>
+    concept indexable = requires(T a) { 
+        { a.size() } -> std::convertible_to<std::size_t>;
+        { a[0] };
+    };
+    
     template<typename T>
     concept ratio = requires(T) {
         { T::num } -> std::convertible_to<std::intmax_t>;
