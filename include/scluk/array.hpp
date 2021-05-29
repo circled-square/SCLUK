@@ -10,18 +10,18 @@
 #include "metaprogramming.hpp"
 
 namespace scluk {
-    template<typename T, std::size_t sz> 
+    template<typename T, size_t sz> 
     struct circular_array : public std::array<T, sz> {
         template<typename...Ts>
         circular_array(Ts...args) : std::array<T,sz>(args...) { }
 
-        inline T& operator[](std::size_t index) { return this->data()[index % sz]; }
+        inline T& operator[](size_t index) { return this->data()[index % sz]; }
     };
  
-    template<std::size_t sz, typename T> constexpr
+    template<size_t sz, typename T> constexpr
     std::array<T,sz> make_array_from_single_value(T& value);
     
-    template<std::size_t sz, typename T> constexpr
+    template<size_t sz, typename T> constexpr
     circular_array<T,sz> make_circ_array_from_single_value(T& value);
 
     template<typename T> 
@@ -41,7 +41,7 @@ namespace scluk {
             virtual ~heap_array_father();
         public:
             using value_type = T;
-            using size_type = std::size_t;
+            using size_type = size_t;
             using difference_type = std::ptrdiff_t;
             using reference = value_type&;
             using const_reference = const value_type&;
@@ -55,14 +55,14 @@ namespace scluk {
             virtual size_t size() const = 0;
             virtual size_t max_size() const = 0;
 
-            T& at(std::size_t i) {
+            T& at(size_t i) {
                 check();
                 if(i >= size()) throw std::out_of_range("heap_array::at(i): i>=sz");
                 return arr_ptr[i];
             }
 
-            T&       operator[](std::size_t i)       { check(); return arr_ptr[i]; }
-            const T& operator[](std::size_t i) const { check(); return arr_ptr[i]; }
+            T&       operator[](size_t i)       { check(); return arr_ptr[i]; }
+            const T& operator[](size_t i) const { check(); return arr_ptr[i]; }
 
             T&       front()       { check(); return arr_ptr[0]; }
             const T& front() const { check(); return arr_ptr[0]; }
@@ -91,18 +91,18 @@ namespace scluk {
 
             constexpr bool        empty()    const { return !arr_ptr; }
 
-            void fill(const T& v) { check(); for(T& e : this) e = v; }
-            void swap(heap_array_father& o) { 
-                check(); 
-                assert(size() == o.size());
+            void fill(const T& v) { check(); for(T& e : *this) e = v; }
+            void swap(heap_array_father& o) {
+                check();
+                assert(size() == o.size() && "tried to swap two scluk::heap_array<...> with different sizes");
                 std::swap(arr_ptr, o.arr_ptr); 
             }
 
             operator bool() { return bool(arr_ptr); }
             bool operator!() { return !arr_ptr; }
 
-            template<concepts::collection collection_t>
-            heap_array_father& operator=(const collection_t& o) { 
+            template<concepts::iterable iterable_t>
+            heap_array_father& operator=(const iterable_t& o) { 
                 assert(o.size() == size() && "tried assigning to scluk::heap_array<...> a container with a different size");
                 if(!arr_ptr)
                     arr_ptr.reset(new T[size()]);
@@ -114,23 +114,24 @@ namespace scluk {
         
     }
 
-    template<typename T, std::size_t sz = 0>
+    template<typename T, size_t sz = 0>
     class heap_array : public detail::heap_array_father<T> {
     protected:
         heap_array(std::unique_ptr<T[]>&& o) : detail::heap_array_father<T>(std::move(o)) {}
     public:
-        heap_array()                      : detail::heap_array_father<T>(std::unique_ptr<T[]>(new T[sz])) {}
-        heap_array(heap_array<T, sz>&& o) : detail::heap_array_father<T>(std::move(o.arr_ptr)) {}
-        heap_array(const std::nullptr_t&) : detail::heap_array_father<T>(nullptr) {}
+        heap_array(std::nullptr_t)      : detail::heap_array_father<T>(nullptr) {}
+        heap_array()                    : heap_array(std::unique_ptr<T[]>(new T[sz])) {}
+        heap_array(heap_array&& o)      : detail::heap_array_father<T>(std::move(o)) {}
+        //heap_array(heap_array& o)       : heap_array(o.clone()) {}
 
-        static constexpr std::size_t array_size = sz;
-        static constexpr std::size_t array_bytes = sz * sizeof(T);
+        static constexpr size_t array_size = sz;
+        static constexpr size_t array_bytes = sz * sizeof(T);
 
         constexpr size_t size() const override { return sz; }
         constexpr size_t max_size() const override { return sz; }
 
         heap_array& operator=(heap_array<T, sz>&& o) { 
-            this->arr_ptr = std::move(o.arr_ptr);
+            this->arr_ptr = std::move(o.arr_ptr);//this->swap(o);
             return *this;
         }
 
@@ -144,21 +145,25 @@ namespace scluk {
 
     template<typename T>
     class heap_array<T, 0> : public detail::heap_array_father<T> {
+        static_assert(sizeof(T) == 0, "do not use this yet");
     protected:
         std::unique_ptr<T[]> arr_ptr;
 
         heap_array(std::unique_ptr<T[]>&& o, size_t sz) : detail::heap_array_father<T>(std::move(o)), array_size(sz), array_bytes(sz * sizeof(T)) {}
     public:
-        heap_array(const std::nullptr_t&, size_t sz) : heap_array(nullptr) {}
-        heap_array(size_t sz) : heap_array(new T[sz], sz) { }
+        heap_array(std::nullptr_t, size_t sz) : heap_array(std::unique_ptr<T[]>(nullptr), sz) {}
+        heap_array(size_t sz)                 : heap_array(new T[sz], sz) { }
         template<size_t sz>
-        heap_array(heap_array<T, sz>&& o) : heap_array(std::move(o.arr_ptr), o.size()) { }
+        heap_array(heap_array<T, sz>&& o)     : heap_array(std::move(o.arr_ptr), o.size()) { }
+        template <size_t sz>
+        heap_array(heap_array<T, sz>& o)      : heap_array(o.clone()) {}
 
-        const std::size_t array_size;
-        const std::size_t array_bytes;
+        const size_t array_size;
+        const size_t array_bytes;
 
-        heap_array& operator=(heap_array&& o) { 
+        heap_array& operator=(heap_array o) { 
             arr_ptr = std::move(o.arr_ptr);
+            this->swap(o);
             return *this;
         }
 
