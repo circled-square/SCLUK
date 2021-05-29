@@ -72,11 +72,17 @@ namespace scluk {
         sliding_queue(std::initializer_list<T> elems) : array(new T[sz]{ elems }), cursor(*this, 0) {}
         sliding_queue(const T& v) : sliding_queue() { for(T& el : *this) el = v; }
 
+        //pushes a new element into the queue in place of the oldest; the oldest is returned
         T push(T el) {
             T ret = *cursor;
             std::swap(*cursor, el);
             cursor++;
             return ret;
+        }
+        //equivalent to push, but returns *this.
+        sliding_queue& operator<<(T el) {
+            push(std::move(el));
+            return *this;
         }
 
         circular_iterator<false> begin() { return cursor; }
