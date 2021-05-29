@@ -89,11 +89,10 @@ namespace scluk {
             const T* rend()  const { check(); return begin() - 1; }
             const T* crend() const { check(); return begin() - 1; }
 
-            constexpr bool        empty()    const { return !arr_ptr; }
+            constexpr bool empty() const { return !arr_ptr; }
 
             void fill(const T& v) { check(); for(T& e : *this) e = v; }
             void swap(heap_array_father& o) {
-                check();
                 assert(size() == o.size() && "tried to swap two scluk::heap_array<...> with different sizes");
                 std::swap(arr_ptr, o.arr_ptr); 
             }
@@ -129,7 +128,7 @@ namespace scluk {
         constexpr size_t size() const override { return sz; }
         constexpr size_t max_size() const override { return sz; }
 
-        heap_array& operator=(heap_array<T, sz>&& o) { 
+        heap_array& operator=(heap_array<T, sz> o) { 
             this->swap(o);
             return *this;
         }
