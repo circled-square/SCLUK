@@ -121,6 +121,7 @@ namespace scluk {
         heap_array()                    : heap_array(std::unique_ptr<T[]>(new T[sz])) {}
         heap_array(heap_array&& o)      : detail::heap_array_father<T>(std::move(o)) {}
         heap_array(heap_array& o)       : heap_array(o.clone()) {}
+        heap_array(const T& value)      : heap_array() { this->fill(value); }
 
         static constexpr size_t array_size = sz;
         static constexpr size_t array_bytes = sz * sizeof(T);
@@ -154,6 +155,7 @@ namespace scluk {
         heap_array(heap_array<T, sz>&& o)     : heap_array(std::move(o.arr_ptr), o.size()) { }
         template <size_t sz>
         heap_array(heap_array<T, sz>& o)      : heap_array(o.clone()) {}
+        heap_array(const T& value)            : heap_array() { this->fill(value); }
 
         const size_t array_size;
         const size_t array_bytes;
