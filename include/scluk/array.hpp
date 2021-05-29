@@ -57,7 +57,7 @@ namespace scluk {
 
             T& at(size_t i) {
                 check();
-                if(i >= size()) throw std::out_of_range("heap_array::at(i): i>=sz");
+                if(i >= size()) throw std::out_of_range(sout("heap_array::at(i): i > size(); i = %, size() = %", i, size()));
                 return arr_ptr[i];
             }
 
@@ -110,8 +110,7 @@ namespace scluk {
                 return *this;
             }
         };
-        template<typename T> heap_array_father<T>::~heap_array_father(){}
-        
+        template<typename T> heap_array_father<T>::~heap_array_father() {}
     }
 
     template<typename T, size_t sz = 0>
@@ -122,7 +121,7 @@ namespace scluk {
         heap_array(std::nullptr_t)      : detail::heap_array_father<T>(nullptr) {}
         heap_array()                    : heap_array(std::unique_ptr<T[]>(new T[sz])) {}
         heap_array(heap_array&& o)      : detail::heap_array_father<T>(std::move(o)) {}
-        //heap_array(heap_array& o)       : heap_array(o.clone()) {}
+        heap_array(heap_array& o)       : heap_array(o.clone()) {}
 
         static constexpr size_t array_size = sz;
         static constexpr size_t array_bytes = sz * sizeof(T);
@@ -131,7 +130,7 @@ namespace scluk {
         constexpr size_t max_size() const override { return sz; }
 
         heap_array& operator=(heap_array<T, sz>&& o) { 
-            this->arr_ptr = std::move(o.arr_ptr);//this->swap(o);
+            this->swap(o);
             return *this;
         }
 
@@ -145,7 +144,6 @@ namespace scluk {
 
     template<typename T>
     class heap_array<T, 0> : public detail::heap_array_father<T> {
-        static_assert(sizeof(T) == 0, "do not use this yet");
     protected:
         std::unique_ptr<T[]> arr_ptr;
 
@@ -162,7 +160,6 @@ namespace scluk {
         const size_t array_bytes;
 
         heap_array& operator=(heap_array o) { 
-            arr_ptr = std::move(o.arr_ptr);
             this->swap(o);
             return *this;
         }
