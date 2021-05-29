@@ -4,7 +4,9 @@
 #include <cmath>
 #include <ratio>
 #include <bit>
+
 #include "aliases.hpp"
+#include "metaprogramming.hpp"
 
 namespace scluk::math {
     template<typename T>
@@ -13,26 +15,23 @@ namespace scluk::math {
         return possibly_negative_module + T(std::signbit(possibly_negative_module)) * divisor;
     }
     /*//to use this I must wait until the implementation of std::bit_cast into gcc
-    inline constexpr scluk::f32 fast_rsqrt(scluk::f32 number) noexcept {
-        using namespace scluk;
-
-        const f32 x2 = number * 0.5f;
+    inline constexpr f32 fast_rsqrt(f32 number) noexcept {
+        const f32 x2 = number * .5f;
         u32 i = std::bit_cast<u32>(number);
-        i  = 0x5f3759df - ( i >> 1 );
+        i = 0x5f3759df - (i >> 1);
         number = std::bit_cast<f32>(i);
-        number  *= 1.5f - ( x2 * number * number );
+        number  *= 1.5f - (x2 * number*number );
         return number;
-    }
-    */
+    }*/
     inline f32 quake_rsqrt(f32 n) {	
         const f32 x2 = n * 0.5f;
 
         union {
             f32 f;
             u32 i;
-        } conv  = { .f = n };
-        conv.i  = 0x5f3759df - ( conv.i >> 1 );
-        conv.f  *= 1.5f - ( x2 * conv.f * conv.f );
+        } conv = { .f = n };
+        conv.i = 0x5f3759df - (conv.i >> 1);
+        conv.f *= 1.5f - (x2 * conv.f*conv.f);
         return conv.f;
     }
     constexpr f128 constexpr_pow(f128 b, imax exp) {
@@ -89,6 +88,13 @@ namespace scluk::math {
 
     template<std::floating_point float_t>
     float_t hann_window(size_t i, size_t sz) { return hann_window(float_t(i) / (sz - 1)); }
+
+    template<concepts::indexable indexable_t>
+    indexable_t hann_window(indexable_t c) {
+        for(u32 i : index(c))
+            c[i] *= hann_window<typename std::remove_cvref<decltype(c[0])>::type>(i, c.size());
+        return c;
+    }
 }
 namespace scluk { namespace math_literals = math::literals; }
 
