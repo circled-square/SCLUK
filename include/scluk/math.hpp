@@ -96,6 +96,7 @@ namespace scluk::math {
         return c;
     }
 }
+
 namespace scluk { namespace math_literals = math::literals; }
 
 #endif //SCLUK_MATH_HPP
