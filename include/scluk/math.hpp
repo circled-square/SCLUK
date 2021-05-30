@@ -56,15 +56,15 @@ namespace scluk::math {
     };
     using pi_constant_t = constant_t<-18, 3141592653589793238,462643383279502884>;
                                         //3.141592653589793238462643383279502884 
-    #define OPERATORS(T, const_t)\
-        inline constexpr T operator+(const_t c, T o) { return T(c.value) + o; }\
-        inline constexpr T operator-(const_t c, T o) { return T(c.value) - o; }\
-        inline constexpr T operator*(const_t c, T o) { return T(c.value) * o; }\
-        inline constexpr T operator/(const_t c, T o) { return T(c.value) / o; }\
-        inline constexpr T operator+(T o, const_t c) { return o + T(c.value); }\
-        inline constexpr T operator-(T o, const_t c) { return o - T(c.value); }\
-        inline constexpr T operator*(T o, const_t c) { return o * T(c.value); }\
-        inline constexpr T operator/(T o, const_t c) { return o / T(c.value); }
+    #define OPERATORS(T, C)\
+        inline constexpr T operator+(C, T o) { return T(C::value) + o; }\
+        inline constexpr T operator-(C, T o) { return T(C::value) - o; }\
+        inline constexpr T operator*(C, T o) { return T(C::value) * o; }\
+        inline constexpr T operator/(C, T o) { return T(C::value) / o; }\
+        inline constexpr T operator+(T o, C) { return o + T(C::value); }\
+        inline constexpr T operator-(T o, C) { return o - T(C::value); }\
+        inline constexpr T operator*(T o, C) { return o * T(C::value); }\
+        inline constexpr T operator/(T o, C) { return o / T(C::value); }
     OPERATORS(f32, pi_constant_t)
     OPERATORS(f64, pi_constant_t)
     OPERATORS(f128, pi_constant_t)
