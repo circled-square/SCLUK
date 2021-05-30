@@ -11,13 +11,14 @@
 
 namespace scluk {
     template<typename T, size_t sz>
-    class sliding_queue {
-    public://iterator class definition
-        template<bool is_internal_cursor>
-        friend class circular_iterator;
-        template<bool is_internal_cursor = false>
+    class sliding_queue;
+
+    namespace detail {
+        template<typename T, size_t sz, bool is_internal_cursor = false>
         class circular_iterator {
-            friend class sliding_queue<T, sz>;
+            template<typename, size_t>
+            friend class scluk::sliding_queue;
+
             static constexpr size_t end = ~size_t(0);
 
             sliding_queue<T,sz>& q;
@@ -28,7 +29,7 @@ namespace scluk {
                     //calculate before assigning to i so if (*this) 
                     //is q.cursor you know it didn't reach end
                     size_t future_value = (i + 1) % sz;
-                    if(future_value == q.cursor.i)
+                    if(future_value == q.begin().i)
                         i = end;
                     else 
                         i = future_value;
@@ -36,13 +37,13 @@ namespace scluk {
                     i = (i + 1) % sz;
                 }
             }
-            
-            circular_iterator(sliding_queue<T,sz>& queue, size_t index) : q(queue), i(index) { }
-
-            operator circular_iterator<false>() {
-                return circular_iterator<false>(q, i);
+            operator circular_iterator<T, sz, false>() {
+                return circular_iterator<T, sz, false>(q, i);
             }
         public:
+            circular_iterator(sliding_queue<T,sz>& queue, size_t index) : q(queue), i(index) { }
+
+            size_t pos() { return i; }
             //prefix
             circular_iterator& operator++() {
                 advance();
@@ -62,11 +63,16 @@ namespace scluk {
                 return i != o.i;
             }
         };
-    private:
+    }
+    template<typename T, size_t sz>
+    class sliding_queue {
+        template<typename, size_t, bool>
+        friend class detail::circular_iterator;
         std::unique_ptr<T[]> array;
-        circular_iterator<true> cursor;
+        detail::circular_iterator<T, sz, true> cursor;
     public:
         using input_t = T;
+        using iterator_type = detail::circular_iterator<T, sz, false>;
 
         sliding_queue() : array(new T[sz]), cursor(*this, 0) {}
         sliding_queue(std::initializer_list<T> elems) : array(new T[sz]{ elems }), cursor(*this, 0) {}
@@ -85,13 +91,19 @@ namespace scluk {
             return *this;
         }
 
-        circular_iterator<false> begin() { return cursor; }
-        circular_iterator<false> end() { return circular_iterator<false>(*this, circular_iterator<false>::end); }
+        iterator_type begin() { return cursor; }
+        iterator_type end() { return iterator_type(*this, iterator_type::end); }
 
         T& operator[](size_t i) { return array[(i + cursor.i) % sz]; }
         const T& operator[](size_t i) const { return array[(i + cursor.i) % sz]; }
 
         static constexpr size_t size() { return sz; }
+    };
+}
+namespace std {
+    template<class T, size_t sz>
+    struct iterator_traits<scluk::detail::circular_iterator<T, sz, false>> {
+        using iterator_category = std::forward_iterator_tag;
     };
 }
 
