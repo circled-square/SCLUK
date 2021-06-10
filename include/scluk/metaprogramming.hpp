@@ -70,6 +70,7 @@ namespace scluk::concepts {
     concept indexable = requires(T a) { 
         { a.size() } -> std::convertible_to<std::size_t>;
         { a[0] };
+        { std::declval<typename T::value_type>() };
     };
     
     template<typename T>
