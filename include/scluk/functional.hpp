@@ -3,7 +3,7 @@
 
 #include <cassert>
 #include <type_traits>
-#include "modern_print.hpp"
+#include "language_extension.hpp"
 #include "metaprogramming.hpp"
 
 namespace scluk {
@@ -11,7 +11,7 @@ namespace scluk {
 
     // this isn't a singleton and it doesn't need to be a class anymore but conceptually it is a singleton
     // template so I won't rewrite it as a template function with static stuff
-    template<class lambda_t, typename signature_t, unsigned long long id = 0>
+    template<class lambda_t, typename signature_t, u64 id = 0>
     class lambda_to_ptr_singleton {
         alignas(lambda_t)
         static char lambda_buf[sizeof(lambda_t)];
@@ -23,6 +23,7 @@ namespace scluk {
         }
     public:
         lambda_to_ptr_singleton() = delete;
+
         static fnptr_t<signature_t> get(lambda_t&& fn) {
             assert(is_null && "every lambda with the same type converted with lambda_to_ptr needs a different id");
             //copy the lambda to get ownership
@@ -31,15 +32,16 @@ namespace scluk {
         }
     };
     
-    template<class lambda_t, typename signature_t, unsigned long long id> alignas(lambda_t)
+    template<class lambda_t, typename signature_t, u64 id> alignas(lambda_t)
     char lambda_to_ptr_singleton<lambda_t, signature_t, id>::lambda_buf[sizeof(lambda_t)] = {};
 
-    template<class lambda_t, typename signature_t, unsigned long long id>
+    template<class lambda_t, typename signature_t, u64 id>
     bool lambda_to_ptr_singleton<lambda_t, signature_t, id>::is_null = true;
 
-    //takes ownership of a lambda (by copying it) and returns a function pointer calling it with minimum overhead.
+    //takes ownership of a callable object (moving it) and returns a function pointer calling it with minimum overhead.
+    //if the type used is not unique (std::function as opposed to lambdas) a unique id needs to be used for each callable with the same type
     //uses assert to check if the id is reused with the same type
-    template<typename signature_t, class lambda_t, unsigned long long id = 0>
+    template<typename signature_t, class lambda_t, u64 id = 0>
     fnptr_t<signature_t> lambda_to_fnptr(lambda_t&& lambda) {
         return lambda_to_ptr_singleton<lambda_t, signature_t, id>::get(std::move(lambda));
     }
