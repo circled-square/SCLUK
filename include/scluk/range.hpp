@@ -16,7 +16,7 @@ namespace scluk {
 
             struct iterator_t {
                 int_t el;
-                bool       operator!=(int_t o) { return el != o; }
+                bool       operator!=(int_t o) { return el < o; }
                 iterator_t operator++()        { return iterator_t { el++ }; }
                 int_t&     operator* ()        { return el;}
             };
