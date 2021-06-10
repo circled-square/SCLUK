@@ -81,18 +81,18 @@ namespace scluk::math {
         constexpr f32 operator""_pi_f(long double n)         { return pi * f32(n); }
         constexpr f32 operator""_pi_f(unsigned long long n)  { return pi * f32(n); }
     }
-    template <std::floating_point float_t>
+    template <typename float_t>
     float_t hann_window(float_t p) {
         return float_t(.5) * (float_t(1.) + std::cos(float_t(2_pi_l) * (p + float_t(.5))));
     }
 
-    template<std::floating_point float_t>
-    float_t hann_window(size_t i, size_t sz) { return hann_window(float_t(i) / (sz - 1)); }
+    template<typename float_t>
+    float_t hann_window(size_t i, size_t sz) { return hann_window(float_t(i) / float_t(sz - 1)); }
 
     template<concepts::indexable indexable_t>
     indexable_t hann_window(indexable_t c) {
         for(u32 i : index(c))
-            c[i] *= hann_window<typename std::remove_cvref<decltype(c[0])>::type>(i, c.size());
+            c[i] *= hann_window<typename indexable_t::value_type>(i, c.size());
         return c;
     }
 }
