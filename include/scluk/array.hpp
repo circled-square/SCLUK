@@ -24,7 +24,7 @@ namespace scluk {
     template<size_t sz, typename T> constexpr
     circular_array<T,sz> make_circ_array_from_single_value(T& value);
 
-    template<typename T> 
+    template<typename T>
     static std::unique_ptr<T[]> make_unique_ptr_array(unsigned size, const auto& func);
 
     //heap_array father class definition
@@ -172,6 +172,17 @@ namespace scluk {
             return n;
         }
     };
+
+    namespace detail {
+        template<typename T, int s, int...sizes> struct array_helper {
+            using type = typename array_helper<std::array<T, s>, sizes...>::type;
+        };
+        template<typename T, int s> struct array_helper<T, s> {
+            using type = std::array<T, s>;
+        };
+    }
+    //multi-dimensional stack array
+    template<typename T, int...sizes> using array = typename detail::array_helper<T, sizes...>::type;
 }
 
 #include "template_definition/array.tpp"
