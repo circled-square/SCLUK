@@ -4,8 +4,6 @@
 #include <string>
 
 namespace scluk {
-    //the declarations and definitions (but not specialisations) are static because the functions must not
-    //be exported to other translation units that might also define them
     inline namespace fmt {
         template<typename...Ts> [[gnu::always_inline]] inline
         void fmt_to_stream(std::ostream&, const char*, Ts...);
@@ -27,6 +25,6 @@ namespace scluk {
     }
 }
 
-#include "template_definition/modern_print.tpp"
+#include "template_definition/format.tpp"
 
 #endif
