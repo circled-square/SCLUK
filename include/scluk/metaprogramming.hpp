@@ -28,20 +28,20 @@ namespace scluk::meta {
     template <template<typename> typename unary_type_template_a, template<typename> typename unary_type_template_b, typename T, bool condition>
     using apply_template_if_true_else_apply_other_template = 
         typename apply_template_if_true_else_apply_other_template_struct<unary_type_template_a, unary_type_template_b, T, condition>::type;
-       
+
     template<typename T, typename...Ts>
     struct signature_helper;
 
     template<typename T, typename...Ts>
     struct signature_helper<T(Ts...)> {
-        using signature_type = T(Ts...);
+        using fun_type = T(Ts...);
         using fptr_type = T(*)(Ts...);
         using ret_type = T;
     };
 
     template<typename T, class class_t, typename...Ts>
     struct signature_helper<T(class_t::*)(Ts...)> {
-        using signature_type = T(Ts...);
+        using fun_type = T(Ts...);
         using fptr_type = T(*)(Ts...);
         using ret_type = T;
         using class_type = class_t;
@@ -51,7 +51,7 @@ namespace scluk::meta {
     
     template<typename T, class class_t, typename...Ts>
     struct signature_helper<T(class_t::*)(Ts...)const> {
-        using signature_type = T(Ts...);
+        using fun_type = T(Ts...);
         using fptr_type = T(*)(Ts...);
         using ret_type = T;
         using class_type = class_t;
@@ -62,8 +62,8 @@ namespace scluk::meta {
 
 namespace scluk::concepts {
     template<typename T>
-    concept iterable = requires(T a) {
-        { std::begin(a), std::end(a) };
+    concept iterable = requires(T a) { 
+    	{ std::begin(a), std::end(a) }; 
     };
 
     template <typename T>
