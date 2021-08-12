@@ -1,7 +1,10 @@
 #include <sstream>
 #include <cstring>
-#include <mutex>
 #include <iostream>
+
+#ifndef SCLUK_NO_FMT_POUT
+#include <mutex>
+#endif
 
 namespace scluk {
     inline namespace fmt {
@@ -36,6 +39,7 @@ namespace scluk {
          inline
         void out() { std::cout << std::endl; }
 
+#ifndef SCLUK_NO_FMT_POUT
         //mutex regulated output to stdout
         static std::mutex stdout_mutex;
 
@@ -54,6 +58,7 @@ namespace scluk {
             std::lock_guard<std::mutex> lock(stdout_mutex);
             out_no_ln(fmt, args...);
         }
+#endif //SCLUK_NO_FMT_POUT
 
         template<typename...Ts> inline
         std::string sout(const char* fmt, Ts...args) {
