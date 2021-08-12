@@ -4,30 +4,17 @@
 #include <concepts>
 #include <iterator>
 #include <cstdint>
+#include <type_traits>
 
 namespace scluk::meta {
-    template <template<typename> typename unary_type_template, typename T, bool condition>
-    struct apply_template_if_true_struct {
-        using type = T;
-    };
-    template <template<typename> typename unary_type_template, typename T>
-    struct apply_template_if_true_struct<unary_type_template, T, true>{
-        using type = unary_type_template<T>;
-    };
-    template <template<typename> typename unary_type_template, typename T, bool condition>
-    using apply_template_if_true = typename apply_template_if_true_struct<unary_type_template, T, condition>::type;
+    template<bool c, template<class> class templ_t, class T>
+    using apply_templ_if = std::conditional_t<c, templ_t<T>, T>;
 
-    template <template<typename> typename unary_type_template_a, template<typename> typename unary_type_template_b, typename T, bool condition>
-    struct apply_template_if_true_else_apply_other_template_struct {
-        using type = unary_type_template_b<T>;
-    };
-    template <template<typename> typename unary_type_template_a, template<typename> typename unary_type_template_b, typename T>
-    struct apply_template_if_true_else_apply_other_template_struct<unary_type_template_a, unary_type_template_b, T, true> {
-        using type = unary_type_template_a<T>;
-    };
-    template <template<typename> typename unary_type_template_a, template<typename> typename unary_type_template_b, typename T, bool condition>
-    using apply_template_if_true_else_apply_other_template = 
-        typename apply_template_if_true_else_apply_other_template_struct<unary_type_template_a, unary_type_template_b, T, condition>::type;
+    template<bool c, template<class> class templ_a, template<class> class templ_b, class T>
+    using apply_templ_if_else = std::conditional_t<c, templ_a<T>, templ_b<T>>;
+
+    template<typename T, typename U>
+    using biggest_t = std::conditional_t<sizeof(T) >= sizeof(U), T, U>;
 
     template<typename T, typename...Ts>
     struct signature_helper;
