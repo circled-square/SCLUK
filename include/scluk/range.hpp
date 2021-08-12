@@ -4,15 +4,18 @@
 #include <type_traits>
 #include <concepts>
 #include <cstdint>
+#include "metaprogramming.hpp"
 
 namespace scluk {
     inline namespace ranges {
-        template<std::integral T = std::int64_t>
+        template<std::integral int_type = std::int64_t>
         struct range {
-            using int_t = T;
+            using int_t = int_type;
             const int_t lower_bound, upper_bound;
-            range(int_t lower, int_t upper) : lower_bound(lower), upper_bound(upper) { }
+
             range(int_t upper) : range(0, upper) { }
+            template <std::integral T, std::integral U>
+            range(T lower, U upper) : lower_bound(int_t(lower)), upper_bound(int_t(upper)) { }
 
             struct iterator_t {
                 int_t el;
@@ -23,8 +26,10 @@ namespace scluk {
             iterator_t begin() { return iterator_t { lower_bound }; }
             int_t end() { return upper_bound; }
         };
-        template<typename T> range(T)   -> range<T>;//template deduction guides
-        template<typename T> range(T,T) -> range<T>;
+        template<typename T> 
+        range(T) -> range<T>;
+        template<typename A, typename B>
+        range(A,B) -> range<meta::biggest_t<A, B>>;
         
         inline range<std::size_t> index(const auto& c) { return range<std::size_t>(c.size()); }
 
