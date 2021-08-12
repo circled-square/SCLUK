@@ -6,8 +6,7 @@
 
 namespace scluk {
     //if need be, transform this into a macro to be used for any exception
-    template<typename...Ts>
-    std::runtime_error runtime_error(const char* fmt, Ts...args) {
+    std::runtime_error runtime_error(const char* fmt, auto...args) {
         return std::runtime_error(sout(fmt, args...));
     }
 }
