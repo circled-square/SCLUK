@@ -10,7 +10,7 @@
 
 namespace scluk::math {
     template<typename T>
-    T positive_module(T dividend, T divisor) {
+    T positive_fmod(T dividend, T divisor) {
         const T possibly_negative_module = std::fmod(dividend, divisor);
         return possibly_negative_module + T(std::signbit(possibly_negative_module)) * divisor;
     }
@@ -55,7 +55,7 @@ namespace scluk::math {
         inline constexpr operator f128()  const { return f128(value); }
     };
     using pi_constant_t = constant_t<-18, 3141592653589793238,462643383279502884>;
-                                        //3.141592653589793238462643383279502884 
+                                       //3.141592653589793238 462643383279502884 
     #define OPERATORS(T, C)\
         inline constexpr T operator+(C, T o) { return T(C::value) + o; }\
         inline constexpr T operator-(C, T o) { return T(C::value) - o; }\
