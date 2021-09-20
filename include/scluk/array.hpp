@@ -16,14 +16,15 @@ namespace scluk {
         circular_array(Ts...args) : std::array<T,sz>(args...) { }
 
         inline T& operator[](size_t index) { return this->data()[index % sz]; }
+        template<size_t sz, typename T>
+        static circular_array make_from_value(const T& v) {
+            return circular_array(make_array_from_single_value(v));
+        }
     };
  
     template<size_t sz, typename T> constexpr
-    std::array<T,sz> make_array_from_single_value(T& value);
+    std::array<T,sz> make_array_from_single_value(const T& value);
     
-    template<size_t sz, typename T> constexpr
-    circular_array<T,sz> make_circ_array_from_single_value(T& value);
-
     template<typename T>
     static std::unique_ptr<T[]> make_unique_ptr_array(unsigned size, const auto& func);
 
