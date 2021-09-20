@@ -16,9 +16,9 @@ namespace scluk {
     static fnptr_t<signature_t> lambda_to_fnptr(lambda_t&& fn) {
         alignas(lambda_t)
         static char lambda_buf[sizeof(lambda_t)] = {};
-        static bool is_null = true;
+        static bool is_empty = true;
 
-        assert(is_null && "every lambda with the same type converted with lambda_to_ptr needs a different id");
+        assert(is_empty && "every lambda with the same type converted with lambda_to_ptr needs a different id");
 
         fnptr_t<signature_t> func = [](auto...args) {
             return reinterpret_cast<lambda_t&>(lambda_buf)(args...); 
@@ -26,7 +26,7 @@ namespace scluk {
 
         //copy the lambda to get ownership
         new (lambda_buf) lambda_t(std::move(fn));
-        is_null = false;
+        is_empty = false;
 
         return func;
     }
