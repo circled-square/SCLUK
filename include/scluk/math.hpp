@@ -11,14 +11,19 @@
 namespace scluk::math {
     //defined in .cpp for f32, f64 and f128
     template<typename T>
-    T positive_fmod<T>(T dividend, T divisor) {
+    T positive_fmod(T dividend, T divisor) {
         const T possibly_negative_module = std::fmod(dividend, divisor);
         return possibly_negative_module + T(std::signbit(possibly_negative_module)) * divisor;
     }
     //quake reverse square root algorithm bit magic
-    //f32 quake_rsqrt(f32 number); 
+    f32 quake_rsqrt(f32 number); 
     
-    consteval f128 consteval_pow(f128 b, imax exp);
+    consteval f128 consteval_pow(f128 b, imax exp) {
+        return
+            exp == 0 ? 1 :
+            exp < 0 ? 1/consteval_pow(b, -exp) :
+            b * consteval_pow(b, exp-2);
+    }
 
     struct constant_t {
         consteval constant_t(imax exp, imax digits, imax digits2) : exponent(exp), digits(digits), digits2(digits2) {}
