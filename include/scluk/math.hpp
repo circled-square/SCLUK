@@ -9,77 +9,54 @@
 #include "metaprogramming.hpp"
 
 namespace scluk::math {
+    //defined in .cpp for f32, f64 and f128
     template<typename T>
-    T positive_fmod(T dividend, T divisor) {
+    T positive_fmod<T>(T dividend, T divisor) {
         const T possibly_negative_module = std::fmod(dividend, divisor);
         return possibly_negative_module + T(std::signbit(possibly_negative_module)) * divisor;
     }
-    /*//to use this I must wait until the implementation of std::bit_cast into gcc
-    inline constexpr f32 fast_rsqrt(f32 number) noexcept {
-        const f32 x2 = number * .5f;
-        u32 i = std::bit_cast<u32>(number);
-        i = 0x5f3759df - (i >> 1);
-        number = std::bit_cast<f32>(i);
-        number  *= 1.5f - (x2 * number*number );
-        return number;
-    }*/
-    inline f32 quake_rsqrt(f32 n) {	
-        const f32 x2 = n * 0.5f;
+    //quake reverse square root algorithm bit magic
+    //f32 quake_rsqrt(f32 number); 
+    
+    consteval f128 consteval_pow(f128 b, imax exp);
 
-        union {
-            f32 f;
-            u32 i;
-        } conv = { .f = n };
-        conv.i = 0x5f3759df - (conv.i >> 1);
-        conv.f *= 1.5f - (x2 * conv.f*conv.f);
-        return conv.f;
-    }
-    constexpr f128 constexpr_pow(f128 b, imax exp) {
-        return 
-            exp == 0 ? 1 :
-            exp < 0 ? 1/constexpr_pow(b, -exp) :
-            b * constexpr_pow(b, exp-1);
-    }
-
-    template<imax exponent, imax digits, imax digits2 = 0>
-    class constant_t {
-    public:
-        static constexpr f128 value = (
-            f128(digits) 
-            + f128(digits2)/ 1000000000000000000.l
-        ) * constexpr_pow(10.l, exponent);
-        inline constexpr bool operator!() const { return !value; }
-        inline constexpr operator bool()  const { return bool(value); }
-        inline constexpr operator f32()   const { return f32(value); }
-        inline constexpr operator f64()   const { return f64(value); }
-        inline constexpr operator f128()  const { return f128(value); }
+    struct constant_t {
+        consteval constant_t(imax exp, imax digits, imax digits2) : exponent(exp), digits(digits), digits2(digits2) {}
+        const imax exponent, digits, digits2;
+        consteval f128 value() const { 
+            return (
+                f128(digits) + f128(digits2)/ 1000000000000000000.l
+            ) * consteval_pow(10.l, exponent);
+        }
+        consteval bool operator!() const { return !value(); }
+        consteval operator bool()  const { return bool(value()); }
+        consteval operator f32()   const { return f32(value()); }
+        consteval operator f64()   const { return f64(value()); }
+        consteval operator f128()  const { return f128(value()); }
     };
-    using pi_constant_t = constant_t<-18, 3141592653589793238,462643383279502884>;
-                                       //3.141592653589793238 462643383279502884 
+    constexpr constant_t pi(-18, 3141592653589793238,462643383279502884);
+                              //3.141592653589793238 462643383279502884 
     #define OPERATORS(T, C)\
-        inline constexpr T operator+(C, T o) { return T(C::value) + o; }\
-        inline constexpr T operator-(C, T o) { return T(C::value) - o; }\
-        inline constexpr T operator*(C, T o) { return T(C::value) * o; }\
-        inline constexpr T operator/(C, T o) { return T(C::value) / o; }\
-        inline constexpr T operator+(T o, C) { return o + T(C::value); }\
-        inline constexpr T operator-(T o, C) { return o - T(C::value); }\
-        inline constexpr T operator*(T o, C) { return o * T(C::value); }\
-        inline constexpr T operator/(T o, C) { return o / T(C::value); }
-    OPERATORS(f32, pi_constant_t)
-    OPERATORS(f64, pi_constant_t)
-    OPERATORS(f128, pi_constant_t)
-
-    constexpr pi_constant_t pi;
+        inline consteval T operator+(C c, T o) { return T(c.value()) + o; }\
+        inline consteval T operator-(C c, T o) { return T(c.value()) - o; }\
+        inline consteval T operator*(C c, T o) { return T(c.value()) * o; }\
+        inline consteval T operator/(C c, T o) { return T(c.value()) / o; }\
+        inline consteval T operator+(T o, C c) { return o + T(c.value()); }\
+        inline consteval T operator-(T o, C c) { return o - T(c.value()); }\
+        inline consteval T operator*(T o, C c) { return o * T(c.value()); }\
+        inline consteval T operator/(T o, C c) { return o / T(c.value()); }
+    OPERATORS(f32,  constant_t)
+    OPERATORS(f64,  constant_t)
+    OPERATORS(f128, constant_t)
+    #undef OPERATORS
 
     inline namespace literals {
-        constexpr f128 operator""_pi_l(long double n)        { return pi * n; }
-        constexpr f128 operator""_pi_l(unsigned long long n) { return pi * f128(n); }
-
-        constexpr f64 operator""_pi(long double n)           { return pi * f64(n); }
-        constexpr f64 operator""_pi(unsigned long long n)    { return pi * f64(n); }
-
-        constexpr f32 operator""_pi_f(long double n)         { return pi * f32(n); }
-        constexpr f32 operator""_pi_f(unsigned long long n)  { return pi * f32(n); }
+        consteval f128 operator""_pi_l(long double n)        { return pi * n; }
+        consteval f128 operator""_pi_l(unsigned long long n) { return pi * f128(n); }
+        consteval f64 operator""_pi(long double n)           { return pi * f64(n); }
+        consteval f64 operator""_pi(unsigned long long n)    { return pi * f64(n); }
+        consteval f32 operator""_pi_f(long double n)         { return pi * f32(n); }
+        consteval f32 operator""_pi_f(unsigned long long n)  { return pi * f32(n); }
     }
     template <typename float_t>
     float_t hann_window(float_t p) {
@@ -89,6 +66,7 @@ namespace scluk::math {
     template<typename float_t>
     float_t hann_window(size_t i, size_t sz) { return hann_window(float_t(i) / float_t(sz - 1)); }
 
+    //applies hann window to an indexable object
     template<concepts::indexable indexable_t>
     indexable_t hann_window(indexable_t c) {
         for(u32 i : index(c))
