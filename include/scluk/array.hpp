@@ -16,7 +16,6 @@ namespace scluk {
         circular_array(Ts...args) : std::array<T,sz>(args...) { }
 
         inline T& operator[](size_t index) { return this->data()[index % sz]; }
-        template<size_t sz, typename T>
         static circular_array make_from_value(const T& v) {
             return circular_array(make_array_from_single_value(v));
         }
