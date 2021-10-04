@@ -63,11 +63,14 @@ namespace scluk::math {
         consteval f32 operator""_pi_f(long double n)         { return pi * f32(n); }
         consteval f32 operator""_pi_f(unsigned long long n)  { return pi * f32(n); }
     }
+
+    //defined in .cpp for f32, f64 and f128
     template <typename float_t>
     float_t hann_window(float_t p) {
         return float_t(.5) * (float_t(1.) + std::cos(float_t(2_pi_l) * (p + float_t(.5))));
     }
 
+    //defined in .cpp for f32, f64 and f128
     template<typename float_t>
     float_t hann_window(size_t i, size_t sz) { return hann_window(float_t(i) / float_t(sz - 1)); }
 
