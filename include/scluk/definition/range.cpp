@@ -14,7 +14,7 @@ namespace scluk::ranges {
     }
     i64 range::end() { return upper_bound; }
     //range::iterator methods
-    bool range::iterator::operator!=(i64 o) { return el < 0; }
+    bool range::iterator::operator!=(i64 o) { return el < o; }
     range::iterator range::iterator::operator++() { 
         return range::iterator{ el++ };
     }
