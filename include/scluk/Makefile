@@ -3,7 +3,7 @@ ARCHIVER=ar rvs
 CPP_FLAGS=-Wall -std=c++20 -I~/.local/include/ -g 
 
 TARGET=target/scluk.a
-OBJ_FILES=target/math.o target/range.o
+OBJ_FILES=target/math.o target/range.o target/logging.o
 
 $(TARGET): $(OBJ_FILES)
 	$(ARCHIVER) $(TARGET) $(OBJ_FILES)
