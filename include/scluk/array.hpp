@@ -6,6 +6,7 @@
 #include <memory>
 #include <cstdint>
 #include <stdexcept>
+#include <cassert>
 #include "language_extension.hpp"
 #include "metaprogramming.hpp"
 
@@ -126,8 +127,8 @@ namespace scluk {
         static constexpr size_t array_size = sz;
         static constexpr size_t array_bytes = sz * sizeof(T);
 
-        constexpr size_t size() const override { return sz; }
-        constexpr size_t max_size() const override { return sz; }
+        constexpr size_t size() const override { return array_size; }
+        constexpr size_t max_size() const override { return array_size; }
 
         heap_array& operator=(heap_array<T, sz> o) { 
             this->swap(o);
@@ -150,15 +151,18 @@ namespace scluk {
         heap_array(std::unique_ptr<T[]>&& o, size_t sz) : detail::heap_array_father<T>(std::move(o)), array_size(sz), array_bytes(sz * sizeof(T)) {}
     public:
         heap_array(std::nullptr_t, size_t sz) : heap_array(std::unique_ptr<T[]>(nullptr), sz) {}
-        heap_array(size_t sz)                 : heap_array(new T[sz], sz) { }
+        heap_array(size_t sz)                 : heap_array(std::unique_ptr<T[]>(new T[sz]), sz) { }
         template<size_t sz>
         heap_array(heap_array<T, sz>&& o)     : heap_array(std::move(o.arr_ptr), o.size()) { }
         template <size_t sz>
         heap_array(const heap_array<T, sz>& o)      : heap_array(o.clone()) {}
-        heap_array(const T& value)            : heap_array() { this->fill(value); }
+        heap_array(size_t sz, const T& value)            : heap_array(sz) { this->fill(value); }
 
         const size_t array_size;
         const size_t array_bytes;
+
+        constexpr size_t size() const override { return array_size; }
+        constexpr size_t max_size() const override { return array_size; }
 
         heap_array& operator=(heap_array o) { 
             this->swap(o);
