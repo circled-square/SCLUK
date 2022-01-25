@@ -30,6 +30,10 @@ namespace scluk {
 
         return func;
     }
+
+    auto compose_fns(const auto& f, const auto& g) {
+        return [](auto...args){ return f(g(args...)); };
+    }
 }
 
 #endif
