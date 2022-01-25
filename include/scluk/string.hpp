@@ -1,22 +1,29 @@
 #ifndef SCLUK_STRING_HPP
 #define SCLUK_STRING_HPP
 
+#include <vector>
 #include <string>
 #include <concepts>
 #include "range.hpp"
 #include "format.hpp"
 
 namespace scluk {
-    inline namespace str {
+    inline namespace string {
         using namespace std::string_literals;
+        template<typename c>
+        using str = std::basic_string<c>;
+        template<typename c>
+        using str_view = std::basic_string_view<c>;
+        using std::size_t;
+
 
         template<std::integral char_t>
-        std::basic_string<char_t> repeat(char_t c, std::size_t n) { return std::basic_string(n, c); }
+        str<char_t> repeat(char_t c, size_t n) { return str<char_t>(n, c); }
 
         template<std::integral char_t>
-        std::basic_string<char_t> repeat(const std::basic_string<char_t>& s, std::size_t n) {
-            const std::size_t sz = s.length();
-            std::basic_string<char_t> ret(sz*n, char_t('a'));
+        str<char_t> repeat(const str<char_t>& s, size_t n) {
+            const size_t sz = s.length();
+            str<char_t> ret(sz*n, char_t('a'));
             for(int i : range(n)) 
                 std::copy(s.begin(), s.end(), ret.begin()+i*sz);
             
@@ -24,12 +31,12 @@ namespace scluk {
         }
 
         template<std::integral char_t>
-        std::basic_string<char_t> operator*(const std::basic_string<char_t>& s, std::size_t n) {
+        str<char_t> operator*(const str<char_t>& s, size_t n) {
             return repeat(s, n);
         }
 
         template<std::integral char_t>
-        int levenshtein_dist(std::basic_string_view<char_t> a, std::basic_string_view<char_t> b) {
+        int levenshtein_dist(str_view<char_t> a, str_view<char_t> b) {
             //this is NOT a fast implementation of the levenshtein distance, only a correct one.
             //it's basically a translation into c++ of the definition from wikipedia.
             //this is for convenience, not speed.
@@ -47,6 +54,15 @@ namespace scluk {
                 levenshtein_dist(a, tail(b)),
                 levenshtein_dist(tail(a), tail(b)),
             });
+        }
+
+        template<std::integral char_t>
+        std::vector<size_t> get_all_positions_of(str_view<char_t> s, char_t c) {
+            std::vector<size_t> positions;
+            for(size_t i : index(s))
+                if(s[i] == c) positions.push_back(i);
+            
+            return positions;
         }
     }
 }
