@@ -10,7 +10,7 @@ namespace scluk::language_extension {
 	using namespace scluk::type_aliases;
 	using namespace scluk::ranges;
 	using namespace scluk::fmt;
-	using namespace scluk::str;
+	using namespace scluk::string;
 }
 
 #endif //SCLUK_LANGUAGE_EXTENSION_HPP
