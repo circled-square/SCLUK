@@ -16,6 +16,9 @@ namespace scluk::meta {
     template<typename T, typename U>
     using biggest_t = std::conditional_t<sizeof(T) >= sizeof(U), T, U>;
 
+    template<typename func_t, typename...args>
+    using return_type_t = decltype(std::declval<func_t>()(std::declval<args>()...));
+
     template<typename T, typename...Ts>
     struct signature_helper;
 
