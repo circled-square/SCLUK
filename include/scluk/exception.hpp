@@ -9,6 +9,8 @@ namespace scluk {
     std::runtime_error runtime_error(const char* fmt, auto...args) {
         return std::runtime_error(sout(fmt, args...));
     }
+
+    void throw_exception(const std::exception& e);
 }
 
 #endif //SCLUK_EXCEPTION_HPP
