@@ -32,8 +32,11 @@ namespace scluk {
     }
 
     auto compose_fns(const auto& f, const auto& g) {
-        return [](auto...args){ return f(g(args...)); };
+        return [=](auto...args){ return f(g(args...)); };
     }
+
+    template<typename T>
+    T identity(T a) { return a; }
 }
 
 #endif
