@@ -68,6 +68,24 @@ namespace scluk::concepts {
         { T::num } -> std::convertible_to<std::intmax_t>;
         { T::den } -> std::convertible_to<std::intmax_t>;
     };
+
+    namespace impl {
+        template<typename func_t, typename ret_t, typename...Ts>
+        concept impl_func = requires (func_t f, Ts...args) {
+            { f(args...) }
+                -> std::convertible_to<ret_t>;
+        };
+
+        template<typename func_t, typename ret_t, typename...Ts>
+        struct impl_func_s;
+
+        template<typename func_t, typename ret_t, typename...Ts>
+        struct impl_func_s<func_t, ret_t(Ts...)> {
+            static const bool value = impl_func<func_t, ret_t, Ts...>;
+        };
+    }
+    template<typename func_t, typename signature>
+    concept func = impl::impl_func_s<func_t, signature>::value;
 }
 
 #endif
