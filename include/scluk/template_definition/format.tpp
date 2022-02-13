@@ -50,8 +50,7 @@ namespace scluk {
             std::lock_guard<std::mutex> lock(stdout_mutex);
             out(fmt, args...);
         }
-         inline
-        void pout() {
+        inline void pout() {
             std::lock_guard<std::mutex> lock(stdout_mutex);
             out();
         }
