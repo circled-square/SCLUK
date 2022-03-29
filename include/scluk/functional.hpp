@@ -18,7 +18,7 @@ namespace scluk {
         static char lambda_buf[sizeof(lambda_t)] = {};
         static bool is_empty = true;
 
-        assert(is_empty && "every lambda with the same type converted with lambda_to_ptr needs a different id");
+        assert(is_empty && "every lambda with the same type converted with scluk::lambda_to_fnptr needs a different id");
 
         fnptr_t<signature_t> func = [](auto...args) {
             return reinterpret_cast<lambda_t&>(lambda_buf)(args...); 
