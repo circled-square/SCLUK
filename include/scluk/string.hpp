@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <concepts>
+#include <algorithm>
 #include "range.hpp"
 #include "format.hpp"
 
