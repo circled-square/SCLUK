@@ -9,7 +9,7 @@
 namespace scluk {
     inline namespace fmt {
         template<typename...Ts> inline
-        void fmt_to_stream(std::ostream& os, const char* fmt, Ts...args) {
+        std::ostream& fmt_to_stream(std::ostream& os, const char* fmt, Ts...args) {
             [[maybe_unused]] auto f = [&os, &fmt] (auto arg) -> void {
                 for(; *fmt; fmt++) {
                     if(*fmt == '\\' && (*(fmt+1) == '%' || *(fmt+1) == '\\'))
@@ -24,6 +24,8 @@ namespace scluk {
             };
             (f(args), ...);
             os << fmt;
+
+            return os;
         }
 
         template<typename...Ts> inline

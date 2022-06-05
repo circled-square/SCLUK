@@ -7,7 +7,7 @@
 namespace scluk {
     inline namespace fmt {
         template<typename...Ts> [[gnu::always_inline]] inline
-        void fmt_to_stream(std::ostream&, const char*, Ts...);
+        std::ostream& fmt_to_stream(std::ostream&, const char*, Ts...);
 
         template <typename...Ts> inline 
         void out(const char*, Ts...);
