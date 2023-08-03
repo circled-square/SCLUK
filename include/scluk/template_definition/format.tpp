@@ -7,65 +7,63 @@
 #endif
 
 namespace scluk {
-    inline namespace fmt {
-        template<typename...Ts> inline
-        std::ostream& fmt_to_stream(std::ostream& os, const char* fmt, Ts...args) {
-            [[maybe_unused]] auto f = [&os, &fmt] (auto arg) -> void {
-                for(; *fmt; fmt++) {
-                    if(*fmt == '\\' && (*(fmt+1) == '%' || *(fmt+1) == '\\'))
-                        fmt++;
-                    else if(*fmt == '%') {
-                        os << arg;
-                        fmt++;
-                        return;
-                    }
-                    os << *fmt;
+    template<typename...Ts> inline
+    std::ostream& fmt_to_stream(std::ostream& os, const char* fmt, Ts...args) {
+        [[maybe_unused]] auto f = [&os, &fmt] (auto arg) -> void {
+            for(; *fmt; fmt++) {
+                if(*fmt == '\\' && (*(fmt+1) == '%' || *(fmt+1) == '\\'))
+                    fmt++;
+                else if(*fmt == '%') {
+                    os << arg;
+                    fmt++;
+                    return;
                 }
-            };
-            (f(args), ...);
-            os << fmt;
+                os << *fmt;
+            }
+        };
+        (f(args), ...);
+        os << fmt;
 
-            return os;
-        }
+        return os;
+    }
 
-        template<typename...Ts> inline
-        void out_no_ln(const char* fmt, Ts...args) {
-            fmt_to_stream(std::cout, fmt, args...);
-        }
+    template<typename...Ts> inline
+    void out_no_ln(const char* fmt, Ts...args) {
+        fmt_to_stream(std::cout, fmt, args...);
+    }
 
-        template<typename...Ts> inline
-        void out(const char* fmt, Ts...args) {
-            out_no_ln(fmt, args...);
-            std::cout << std::endl;
-        }
-         inline
-        void out() { std::cout << std::endl; }
+    template<typename...Ts> inline
+    void out(const char* fmt, Ts...args) {
+        out_no_ln(fmt, args...);
+        std::cout << std::endl;
+    }
+     inline
+    void out() { std::cout << std::endl; }
 
 #ifndef SCLUK_NO_FMT_POUT
-        //mutex regulated output to stdout
-        static std::mutex stdout_mutex;
+    //mutex regulated output to stdout
+    static std::mutex stdout_mutex;
 
-        template<typename...Ts> inline
-        void pout(const char* fmt, Ts...args) {
-            std::lock_guard<std::mutex> lock(stdout_mutex);
-            out(fmt, args...);
-        }
-        inline void pout() {
-            std::lock_guard<std::mutex> lock(stdout_mutex);
-            out();
-        }
-        template<typename...Ts> inline
-        void pout_no_ln(const char* fmt, Ts...args) {
-            std::lock_guard<std::mutex> lock(stdout_mutex);
-            out_no_ln(fmt, args...);
-        }
+    template<typename...Ts> inline
+    void pout(const char* fmt, Ts...args) {
+        std::lock_guard<std::mutex> lock(stdout_mutex);
+        out(fmt, args...);
+    }
+    inline void pout() {
+        std::lock_guard<std::mutex> lock(stdout_mutex);
+        out();
+    }
+    template<typename...Ts> inline
+    void pout_no_ln(const char* fmt, Ts...args) {
+        std::lock_guard<std::mutex> lock(stdout_mutex);
+        out_no_ln(fmt, args...);
+    }
 #endif //SCLUK_NO_FMT_POUT
 
-        template<typename...Ts> inline
-        std::string sout(const char* fmt, Ts...args) {
-            std::stringstream ss;
-            fmt_to_stream(ss, fmt, args...);
-            return ss.str();
-        }
+    template<typename...Ts> inline
+    std::string sout(const char* fmt, Ts...args) {
+        std::stringstream ss;
+        fmt_to_stream(ss, fmt, args...);
+        return ss.str();
     }
 }

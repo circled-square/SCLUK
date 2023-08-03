@@ -7,7 +7,6 @@
 
 namespace scluk::language_extension {
 	using namespace scluk::ranges;
-	using namespace scluk::fmt;
 }
 
 #endif //SCLUK_LANGUAGE_EXTENSION_HPP
