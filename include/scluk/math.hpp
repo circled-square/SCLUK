@@ -55,15 +55,6 @@ namespace scluk::math {
     OPERATORS(f128, constant_t)
     #undef OPERATORS
 
-    inline namespace literals {
-        consteval f128 operator""_pi_l(long double n)        { return pi * n; }
-        consteval f128 operator""_pi_l(unsigned long long n) { return pi * f128(n); }
-        consteval f64 operator""_pi(long double n)           { return pi * f64(n); }
-        consteval f64 operator""_pi(unsigned long long n)    { return pi * f64(n); }
-        consteval f32 operator""_pi_f(long double n)         { return pi * f32(n); }
-        consteval f32 operator""_pi_f(unsigned long long n)  { return pi * f32(n); }
-    }
-
     //defined in .cpp for f32, f64 and f128
     template <typename float_t>
     float_t hann_window(float_t p) {
@@ -82,7 +73,5 @@ namespace scluk::math {
         return c;
     }
 }
-
-namespace scluk { namespace math_literals = math::literals; }
 
 #endif //SCLUK_MATH_HPP
