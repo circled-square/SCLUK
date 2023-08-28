@@ -146,8 +146,6 @@ namespace scluk {
     template<typename T>
     class heap_array<T, 0> : public detail::heap_array_father<T> {
     protected:
-        std::unique_ptr<T[]> arr_ptr;
-
         heap_array(std::unique_ptr<T[]>&& o, size_t sz) : detail::heap_array_father<T>(std::move(o)), array_size(sz), array_bytes(sz * sizeof(T)) {}
     public:
         heap_array(std::nullptr_t, size_t sz) : heap_array(std::unique_ptr<T[]>(nullptr), sz) {}
@@ -177,6 +175,7 @@ namespace scluk {
         }
     };
 
+    //multi-dimensional static array implementation
     namespace detail {
         template<typename T, int s, int...sizes> struct array_helper {
             using type = typename array_helper<std::array<T, s>, sizes...>::type;
@@ -185,7 +184,7 @@ namespace scluk {
             using type = std::array<T, s>;
         };
     }
-    //multi-dimensional stack array
+    //multi-dimensional static array
     template<typename T, int...sizes> using array = typename detail::array_helper<T, sizes...>::type;
 }
 
