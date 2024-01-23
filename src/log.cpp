@@ -17,12 +17,12 @@ namespace scluk {
           m_timestamp(timestamp ? get_timestamp_string() : std::string())
     {}
 
-    void log::print_line(std::string line) {
+    void log::operator()(const std::string& line) {
         std::size_t line_hash = std::hash<std::string>{}(line);
 
         if(line_hash == m_last_line_hash && m_repeated_line_count != 0) {
-            m_repeated_line_count++;
             //repeated the last line
+            m_repeated_line_count++;
         } else {
             //a new, different line is being printed
 
@@ -31,16 +31,18 @@ namespace scluk {
                 m_stream << "(repeated x" << m_repeated_line_count << ")";
             m_stream << std::endl;
 
-
-            m_repeated_line_count = 1;
-
+            //print the new line
             m_stream << m_timestamp << line << std::flush;
+            m_repeated_line_count = 1;
+            m_last_line_hash = line_hash;
         }
 
     }
 
     log::~log() {
-        //terminate the last line
+        //print the count of how many times it was printed and terminate the last line
+        if(m_repeated_line_count > 1)
+            m_stream << "(repeated x" << m_repeated_line_count << ")";
         m_stream << std::endl;
     }
 

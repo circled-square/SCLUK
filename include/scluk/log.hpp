@@ -16,13 +16,13 @@ namespace scluk {
         std::size_t m_last_line_hash;
         std::size_t m_repeated_line_count;
 
-        void print_line(std::string);
     public:
         log(std::ostream&, bool timestamp = false);
 
+        void operator()(const std::string&);
         inline void operator()(const char* fmt, auto... args) {
             std::string line = sout(fmt, args...);
-            this->print_line(line);
+            this->operator()(line);
         }
 
         ~log();
