@@ -12,7 +12,7 @@ namespace scluk {
      */
     class log {
         std::ostream& m_stream;
-        std::string timestamp;
+        std::string m_timestamp;
         std::size_t m_last_line_hash;
         std::size_t m_repeated_line_count;
 
