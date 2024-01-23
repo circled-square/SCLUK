@@ -1,4 +1,4 @@
-#include "../math.hpp"
+#include "../include/scluk/math.hpp"
 
 namespace scluk::math {
     //quake reverse square root algorithm bit magic

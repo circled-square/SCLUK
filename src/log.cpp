@@ -1,4 +1,4 @@
-#include "../log.hpp"
+#include "../include/scluk/log.hpp"
 
 
 namespace scluk {
