@@ -2,9 +2,10 @@
 #define SCLUK_VECTOR_HPP
 
 namespace scluk {
-    template<class vector_t, typename...Ts>
-    void populate_from_pack(vector_t& vec, Ts&...pack);
+    inline void populate_from_pack(auto& vec, const auto&... pack) {
+        vec.reserve(vec.size() + sizeof...(pack));
+        (vec.push_back(pack), ...);
+    }
 }
-#include "template_definition/vector.tpp"
 
 #endif
