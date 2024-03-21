@@ -3,8 +3,8 @@
 
 #include <cassert>
 #include <type_traits>
-#include "language_extension.hpp"
 #include "metaprogramming.hpp"
+#include "aliases.hpp"
 
 namespace scluk {
     template<typename signature_t> using fnptr_t = typename meta::signature_helper<signature_t>::fptr_type;
