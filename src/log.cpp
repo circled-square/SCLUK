@@ -1,4 +1,5 @@
 #include "../include/scluk/log.hpp"
+#include <iostream>
 
 
 namespace scluk {
@@ -7,7 +8,7 @@ namespace scluk {
     static std::string get_timestamp_string() {
         std::time_t t = std::time(nullptr);
         std::tm& p = *std::localtime(&t);
-        return scluk::sout(" %/%/% %:%:%", p.tm_mday, p.tm_mon+1, p.tm_year%100, p.tm_hour, p.tm_min, p.tm_sec);
+        return std::format(" {}/{}/{} {}:{}:{}", p.tm_mday, p.tm_mon+1, p.tm_year%100, p.tm_hour, p.tm_min, p.tm_sec);
     }
 
     static const char* log_level_names[] = {
@@ -25,12 +26,14 @@ namespace scluk {
 
     void log::set_log_level(log_level l) {
         m_log_level = l;
-        info("log level set to %", log_level_names[uint8_t(l)]);
+        info("log level set to {}", log_level_names[int(l)]);
     }
 
-    void log::operator()(log_level l, const std::string &line) {
-
+    void log::operator()(log_level l, std::string_view fmt, std::format_args args) {
         if (l <= m_log_level) {
+            //only perform formatting if necessary
+            std::string line = std::vformat(fmt, args);
+
             //simply ignore the possibility of hash collision
             std::size_t line_hash = std::hash<std::string>{}(line) + (std::size_t)l;
 
@@ -46,7 +49,7 @@ namespace scluk {
                 m_stream << std::endl;
 
                 //print the new line without the \n
-                m_stream << "[" << log_level_names[uint8_t(l)] << m_timestamp << "] " << line << std::flush;
+                m_stream << "[" << log_level_names[int(l)] << m_timestamp << "] " << line << std::flush;
                 m_repeated_line_count = 1;
                 m_last_line_hash = line_hash;
             }
