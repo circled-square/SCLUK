@@ -17,9 +17,9 @@ namespace scluk {
 
     log::log(std::ostream& stream, log_level l, bool timestamp)
         : m_stream(stream), 
+          m_timestamp(timestamp ? get_timestamp_string() : std::string()),
           m_last_line_hash(0), 
-          m_repeated_line_count(0),
-          m_timestamp(timestamp ? get_timestamp_string() : std::string())
+          m_repeated_line_count(0)
     {
         set_log_level(l);
     }
