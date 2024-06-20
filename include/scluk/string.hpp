@@ -6,7 +6,6 @@
 #include <concepts>
 #include <algorithm>
 #include "range.hpp"
-#include "format.hpp"
 
 namespace scluk {
     inline namespace string {
