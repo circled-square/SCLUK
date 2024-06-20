@@ -10,7 +10,7 @@
 
 namespace scluk::math {
     //defined in .cpp for f32, f64 and f128
-    template<typename T>
+    template<std::floating_point T>
     T positive_fmod(T dividend, T divisor) {
         const T possibly_negative_module = std::fmod(dividend, divisor);
         return possibly_negative_module + T(std::signbit(possibly_negative_module)) * divisor;
@@ -18,7 +18,7 @@ namespace scluk::math {
     //quake reverse square root algorithm bit magic
     f32 quake_rsqrt(f32 number); 
     
-    consteval f128 consteval_pow(f128 b, imax exp) {
+    consteval fmax consteval_pow(fmax b, imax exp) {
         return
             exp == 0 ? 1 :
             exp < 0 ? 1/consteval_pow(b, -exp) :
@@ -37,10 +37,10 @@ namespace scluk::math {
     float_t hann_window(size_t i, size_t sz) { return hann_window(float_t(i) / float_t(sz - 1)); }
 
     //applies hann window to an indexable object
-    template<concepts::indexable indexable_t>
+    template<typename T, concepts::indexable<T> indexable_t>
     indexable_t hann_window(indexable_t c) {
         for(u32 i : index(c))
-            c[i] *= hann_window<typename indexable_t::value_type>(i, c.size());
+            c[i] *= hann_window<T>(i, c.size());
         return c;
     }
 }

@@ -27,6 +27,9 @@ namespace scluk::meta {
         using fn_type = T(Ts...);
         using fptr_type = T(*)(Ts...);
         using ret_type = T;
+
+        constexpr static bool is_method = false;
+        constexpr static bool is_const_method = false;
     };
 
     template<typename T, class class_t, typename...Ts>
@@ -37,6 +40,9 @@ namespace scluk::meta {
         using class_type = class_t;
         using method_type = T(class_t::*)(Ts...);
         using const_method_type = T(class_t::*)(Ts...)const;
+
+        constexpr static bool is_method = true;
+        constexpr static bool is_const_method = false;
     };
     
     template<typename T, class class_t, typename...Ts>
@@ -47,19 +53,24 @@ namespace scluk::meta {
         using class_type = class_t;
         using method_type = T(class_t::*)(Ts...);
         using const_method_type = T(class_t::*)(Ts...)const;
+
+        constexpr static bool is_method = true;
+        constexpr static bool is_const_method = true;
     };    
 }
 
 namespace scluk::concepts {
-    template<typename T>
+    template<typename T, typename value_type>
     concept iterable = requires(T a) { 
-    	{ std::begin(a), std::end(a) }; 
+    	{ ++std::begin(a) };
+        { *std::begin(a) } -> std::convertible_to<value_type>;
+        { std::end(a) };
     };
 
-    template <typename T>
+    template <typename T, typename value_type>
     concept indexable = requires(T a) { 
         { a.size() } -> std::convertible_to<std::size_t>;
-        { a[0] };
+        { a[0] } -> std::convertible_to<value_type>;
         { std::declval<typename T::value_type>() };
     };
     
