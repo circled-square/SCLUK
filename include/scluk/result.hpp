@@ -10,121 +10,108 @@
 
 namespace scluk {
     template<std::default_initializable ret_t, class warning_t = std::string> requires(!std::derived_from<warning_t, std::exception>)
-    struct successful_result {
+    struct with_warning {
         ret_t r; 
         std::optional<warning_t> w;
 
-        successful_result(ret_t r, std::optional<warning_t> w = {}) : r(r), w(w) {}
+        with_warning(ret_t r, std::optional<warning_t> w = {}) : r(r), w(w) {}
 
-        ret_t unwrap() { return r; }
+        [[nodiscard]]
+        ret_t&& unwrap() { return std::move(r); }
 
-        template<concepts::fn<void(warning_t)> warning_cb_t>
-        ret_t unwrap(warning_cb_t warning_cb) {
+        [[nodiscard]]
+        ret_t&& unwrap(concepts::fn<void(warning_t)> auto warning_cb) {
             if(w) warning_cb(*w);
-            return r;
+            return std::move(r);
         }
 
-        ret_t unwrap(std::optional<warning_t>& w) {
-            w = this->w;
-            return r;
+        [[nodiscard]]
+        ret_t&& unwrap(std::optional<warning_t>& warning) {
+            warning = std::move(this->w);
+            return std::move(r);
         }
 
-        std::tuple<ret_t, std::optional<warning_t>> to_tuple(){ return {r,w}; }
+        std::tuple<ret_t, std::optional<warning_t>> to_tuple(){ return { std::move(r), std::move(w) }; }
     };
 
-    template<std::default_initializable ret_t, class warning_t = std::string> requires(!std::derived_from<warning_t, std::exception>)
+    // at any point the result has either state 'ok' (contains a value of type T) or state 'err' (contains an exception)
+    // call is_ok/is_err to check the state
+    // call set_ok/set_err to set the state
+    // call unwrap/unwrap_err to obtain ownership of the ok/err value
+    // call inspect/inspect_err to obtain a reference to the ok/err value
+    template<typename T>
     class result {
+    public:
+        using value_type = T;
+    private:
         using exception_ptr_t = std::unique_ptr<std::exception>;
-        using success = successful_result<ret_t, warning_t>;
-        using variant_t = std::variant<exception_ptr_t, success>;
+        using variant_t = std::variant<exception_ptr_t, value_type>;
         variant_t m_contents;
 
-        exception_ptr_t& get_except_ptr(){ return std::get<exception_ptr_t>(m_contents); }
-        success& get_success_struct() { return std::get<success>(m_contents); }
+        exception_ptr_t& get_exception_ptr(){ return std::get<exception_ptr_t>(m_contents); }
     public:
-        /* assumes state is 'exception' */
-        std::exception& get_except() { return *get_except_ptr(); }
-        /* assumes state is 'success' */
-        ret_t& get_result(){ return get_success_struct().r; }
-        std::optional<warning_t>& get_opt_warning(){ return get_success_struct().w; }
-        warning_t& get_warning(){ return *get_success_struct().w; }
-
-        bool has_except(){ return std::holds_alternative<exception_ptr_t>(m_contents); }
-        bool has_result(){ return std::holds_alternative<success>(m_contents); }
-        bool has_warning(){ return has_result() && std::get<success>(m_contents).w; }
-
-        /* sets the state to 'success' */
-        result() : m_contents(success{ret_t(),{}}) {}
-        result(ret_t r) : m_contents(success{std::move(r), {}}) {}
-        result(ret_t r, warning_t w) : m_contents(success{std::move(r), std::move(w)}) {}
-        result(ret_t r, std::optional<warning_t> w) : m_contents(success{std::move(r), std::move(w)}) {}
-        /* sets the state to 'exception' */
-        template<std::derived_from<std::exception> except_t>
-        result(const except_t& e) : m_contents(std::make_unique<std::exception>(std::move(e))) {}
-        result(exception_ptr_t&& e) : m_contents(std::move(e)) {}
-        /* mimics the moved object's state*/
+        // sets the state to 'ok'
+        result(value_type r) : m_contents(std::move(r)) {}
+        // sets the state to 'err'
+        template<std::derived_from<std::exception> exception_t>
+        result(const exception_t& e) : m_contents(new exception_t(std::move(e))) {}
+        result(std::unique_ptr<std::exception> e) : m_contents(std::move(e)) {}
+        // mimics the moved object's state
         result(result&& o) : m_contents(std::move(o.m_contents)) {}
+
+
+        // returns true if the state is 'err'
+        [[nodiscard]]
+        bool is_err() { return std::holds_alternative<exception_ptr_t>(m_contents); }
+        // returns true if the state is 'ok'
+        [[nodiscard]]
+        bool is_ok(){ return std::holds_alternative<value_type>(m_contents); }
+
         
-        /* sets the state to 'success' */
-        result set(ret_t v, std::optional<warning_t> w) {
-            m_contents = {v, w};
-            return *this; 
-        }
-        /* assumes state is 'success' */
-        result warn(warning_t w) { get_warning() = w; return *this; }
-        /* sets the state to 'exception' */
-        void fail(std::exception e) { m_contents = std::make_unique<std::exception>(std::move(e)); }
-        void fail(std::exception_ptr e) { m_contents = std::move(e); }
+        /* sets the state to 'ok' */
+        void set_ok(value_type v) { m_contents = std::move(v); }
+        /* sets the state to 'err' */
+        void set_err(std::unique_ptr<std::exception> e) { m_contents = std::move(e); }
+
+        /* assumes state is 'err' */
+        [[nodiscard]]
+        std::exception& inspect_err() { return *get_exception_ptr(); }
+        /* assumes state is 'ok' */
+        [[nodiscard]]
+        value_type& inspect() { return std::get<value_type>(m_contents); }
 
         /*
-         *  unwrap will return the contained value, coping with any errors or warnings the way the user specifies. 
-         *  assumes state isn't 'nothing'.
+         *  unwrap will return the contained value, coping with any errors the way the user specifies.
          */
-        //throw exceptions, ignore warnings
-        ret_t unwrap() { return unwrap(throw_exception); }
-
-        //throw exceptions, cb for warnings
-        template<concepts::fn<void(warning_t)> warning_cb_t>
-        ret_t unwrap(warning_cb_t warning_cb) { return unwrap(throw_exception, warning_cb); }
+        //throw exceptions
+        [[nodiscard]]
+        value_type&& unwrap() { return unwrap(throw_exception); }
         
-        //cb for exceptions, ignore warnings
-        template<concepts::fn<ret_t(std::exception)> except_cb_t>
-        ret_t unwrap(except_cb_t except_cb) {
-            if(has_except()) return except_cb(get_except());
-            return std::move(get_result());
+        //cb for exceptions
+        [[nodiscard]]
+        value_type&& unwrap(concepts::fn<value_type(std::exception&)> auto except_cb) {
+            if(is_err()) return except_cb(inspect_err());
+            return std::move(inspect());
         }
 
-        //cb for exceptions and for warnings
-        template<
-            concepts::fn<ret_t(std::exception)> except_cb_t, 
-            concepts::fn<void(warning_t)> warning_cb_t> 
-        ret_t unwrap(except_cb_t except_cb, warning_cb_t warning_cb) {
-            if(has_except()) return except_cb(get_except());
-            if(has_warning()) warning_cb(get_warning());
-            return std::move(get_result());
-        }
-        
-        //rethrowing cb for exception, ignore warnings
-        template<concepts::fn<void(std::exception)> except_cb_t>
-        ret_t unwrap(except_cb_t except_cb) {
-            if(has_except()) {
-                except_cb(get_except());
-                throw get_except();
+
+        //cb for exception, rethrows them anyway afterwards if the cb itself does not throw
+        [[nodiscard]]
+        value_type&& unwrap(concepts::fn<void(std::exception&)> auto except_cb) {
+            if(is_err()) {
+                except_cb(inspect_err());
+                throw unwrap_err();
             }
-            return std::move(get_result());
+            return std::move(inspect());
         }
 
-        //rethrowing cb for exception, cb for warnings
-        template<
-            concepts::fn<void(std::exception)> except_cb_t, 
-            concepts::fn<void(warning_t)> warning_cb_t>
-        ret_t unwrap(except_cb_t except_cb, warning_cb_t warning_cb) {
-            if(has_except()) {
-                except_cb(get_except());
-                throw get_except();
+        //unwrap_err moves the error out of the result, throws if the state is 'ok'
+        [[nodiscard]]
+        std::unique_ptr<std::exception>&& unwrap_err() {
+            if(is_ok()) {
+                throw std::runtime_error("unwrap_err called on a result with state 'ok'");
             }
-            if(has_warning()) warning_cb(get_warning());
-            return std::move(get_result());
+            return std::move(get_exception_ptr());
         }
     };
 }
