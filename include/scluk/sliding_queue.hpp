@@ -7,7 +7,7 @@
 #include <cassert>
 #include <initializer_list>
 
-#include "language_extension.hpp"
+#include "aliases.hpp"
 
 namespace scluk {
     template<typename T, size_t sz>
