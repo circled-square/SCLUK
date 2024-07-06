@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.25)
+
 if(DEFINED scluk_GUARD)
     if(NOT scluk_GUARD STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
         return() # Project has been already included by someone else
@@ -7,7 +9,6 @@ else()
 endif()
 
 
-cmake_minimum_required(VERSION 3.25)
 project(scluk LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 
